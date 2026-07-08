@@ -1,2 +1,8 @@
-fastapi
 requests
+pydantic[email]
+qdrant-client
+sqlmodel
+fastapi
+fastapi[standard]
+psycopg
+psycopg_binary

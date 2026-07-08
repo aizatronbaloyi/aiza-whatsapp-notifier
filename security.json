@@ -1,0 +1,266 @@
+{
+    "version": "7.3",
+    "data_api_version": "3.0",
+    "routing_model": {
+        "ALERT_DETAIL": [
+            "TAKE_ACTION"
+        ],
+        "TAKE_ACTION": [
+            "SNOOZE",
+            "FALSE_ALARM"
+        ],
+        "SNOOZE": [],
+        "FALSE_ALARM": []
+    },
+    "screens": [
+        {
+            "id": "ALERT_DETAIL",
+            "title": "IoTaas alert",
+            "data": {
+                "title": {
+                    "type": "string",
+                    "__example__": "Person in restricted zone"
+                },
+                "event_type": {
+                    "type": "string",
+                    "__example__": "intrusion"
+                },
+                "zone": {
+                    "type": "string",
+                    "__example__": "Zone 3 - Loading Bay"
+                },
+                "camera": {
+                    "type": "string",
+                    "__example__": "CAM-07"
+                },
+                "confidence": {
+                    "type": "string",
+                    "__example__": "96%"
+                },
+                "ts": {
+                    "type": "string",
+                    "__example__": "02:14"
+                },
+                "severity": {
+                    "type": "string",
+                    "__example__": "critical"
+                },
+                "event_id": {
+                    "type": "string",
+                    "__example__": "evt_8842"
+                },
+                "snapshot_url": {
+                    "type": "string",
+                    "__example__": "https://cdn/.../s.jpg"
+                },
+                "live_stream_url": {
+                    "type": "string",
+                    "__example__": "https://www.whatsapp.com/"
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Image",
+                        "src": "${data.snapshot_url}",
+                        "height": 220,
+                        "scale-type": "cover"
+                    },
+                    {
+                        "type": "TextHeading",
+                        "text": "${data.title}"
+                    },
+                    {
+                        "type": "TextSubheading",
+                        "text": "${data.zone}"
+                    },
+                    {
+                        "type": "TextBody",
+                        "text": "`'Camera  ' ${data.camera} '  -  conf  ' ${data.confidence} '  -  ' ${data.ts}`"
+                    },
+                    {
+                        "type": "EmbeddedLink",
+                        "text": "View live stream",
+                        "on-click-action": {
+                            "name": "open_url",
+                            "url": "${data.live_stream_url}"
+                        }
+                    },
+                    {
+                        "type": "Footer",
+                        "label": "Take action",
+                        "on-click-action": {
+                            "name": "navigate",
+                            "next": {
+                                "type": "screen",
+                                "name": "TAKE_ACTION"
+                            },
+                            "payload": {
+                                "event_id": "${data.event_id}"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "id": "TAKE_ACTION",
+            "title": "Respond",
+            "data": {
+                "event_id": {
+                    "type": "string",
+                    "__example__": "evt_8842"
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "RadioButtonsGroup",
+                        "name": "response",
+                        "required": true,
+                        "label": "How do you want to respond?",
+                        "data-source": [
+                            {
+                                "id": "acknowledge",
+                                "title": "Acknowledge and resolve"
+                            },
+                            {
+                                "id": "false_alarm",
+                                "title": "Mark as false alarm"
+                            },
+                            {
+                                "id": "escalate",
+                                "title": "Escalate to on-call"
+                            },
+                            {
+                                "id": "snooze",
+                                "title": "Snooze this camera"
+                            },
+                            {
+                                "id": "trigger_onsite",
+                                "title": "Trigger siren and lights"
+                            }
+                        ]
+                    },
+                    {
+                        "type": "Footer",
+                        "label": "Continue",
+                        "on-click-action": {
+                            "name": "data_exchange",
+                            "payload": {
+                                "event_id": "${data.event_id}",
+                                "response": "${form.response}"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "id": "SNOOZE",
+            "title": "Snooze camera",
+            "terminal": true,
+            "data": {
+                "event_id": {
+                    "type": "string",
+                    "__example__": "evt_8842"
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Dropdown",
+                        "name": "minutes",
+                        "required": true,
+                        "label": "Pause alerts for",
+                        "data-source": [
+                            {
+                                "id": "30",
+                                "title": "30 minutes"
+                            },
+                            {
+                                "id": "60",
+                                "title": "1 hour"
+                            },
+                            {
+                                "id": "240",
+                                "title": "4 hours"
+                            },
+                            {
+                                "id": "720",
+                                "title": "Until end of shift"
+                            }
+                        ]
+                    },
+                    {
+                        "type": "Footer",
+                        "label": "Confirm snooze",
+                        "on-click-action": {
+                            "name": "complete",
+                            "payload": {
+                                "event_id": "${data.event_id}",
+                                "action": "snooze",
+                                "snooze_minutes": "${form.minutes}"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "id": "FALSE_ALARM",
+            "title": "False alarm",
+            "terminal": true,
+            "data": {
+                "event_id": {
+                    "type": "string",
+                    "__example__": "evt_8842"
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Dropdown",
+                        "name": "reason",
+                        "required": true,
+                        "label": "What was it really?",
+                        "data-source": [
+                            {
+                                "id": "staff",
+                                "title": "Authorized staff"
+                            },
+                            {
+                                "id": "animal",
+                                "title": "Animal"
+                            },
+                            {
+                                "id": "weather",
+                                "title": "Weather / shadows"
+                            },
+                            {
+                                "id": "vehicle_known",
+                                "title": "Known vehicle"
+                            }
+                        ]
+                    },
+                    {
+                        "type": "Footer",
+                        "label": "Submit and resolve",
+                        "on-click-action": {
+                            "name": "complete",
+                            "payload": {
+                                "event_id": "${data.event_id}",
+                                "action": "false_alarm",
+                                "reason": "${form.reason}"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
